@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Diet Checklist (2.6 bug‑fix)</title>
+
+    <style>
+:root{--primary:#5b6ee1;--accent:#c5b9ff;--bg:#f4f6f8;--card:#fff;--radius:12px;--shadow:0 2px 6px rgba(0,0,0,.08);}
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-tap-highlight-color:transparent;}
+body{margin:0;padding:1rem;background:var(--bg);color:#222;display:flex;flex-direction:column;align-items:center;}
+header{width:100%;max-width:700px;display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;}
+h1{margin:0;font-size:clamp(1.3rem,4.5vw,1.6rem);color:var(--primary);}
+#toggleUser{background:transparent;border:none;font-size:1.05rem;min-height:40px;cursor:pointer;color:var(--primary);display:flex;gap:.2rem;}
+#toggleUser span{opacity:.6;font-weight:400;}#toggleUser .active{opacity:1;font-weight:700;}
+main{width:100%;max-width:700px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem;margin-top:.4rem;}
+.list-row{display:flex;justify-content:space-between;align-items:center;margin:.55rem 0;}
+.list-row input{margin-right:.6rem;transform:scale(1.25);}
+.list-row label{flex:1;display:flex;align-items:center;gap:.55rem;cursor:pointer;font-size:1rem;}
+.list-row span{min-width:70px;text-align:right;font-size:.95rem;color:#555;}
+progress{width:100%;height:16px;margin:.3rem 0;border:none;border-radius:8px;background:#ddd;}
+progress::-webkit-progress-bar{background:#ddd;border-radius:8px;}progress::-webkit-progress-value{background:var(--primary);border-radius:8px;}
+footer{width:100%;max-width:700px;margin-top:.6rem;text-align:center;font-size:1rem;color:#444;line-height:1.45;}
+.action-row{display:flex;gap:.5rem;justify-content:center;margin-top:.6rem;}
+button.action{flex:1;background:var(--primary);color:#fff;border:none;border-radius:var(--radius);padding:.6rem .8rem;font-size:.95rem;min-height:40px;cursor:pointer;box-shadow:var(--shadow);transition:opacity .2s;}button.action:hover{opacity:.9;}
+#motivation{margin-top:.5rem;font-weight:500;color:var(--primary);opacity:0;transition:opacity .4s;}
+#motivation.show{opacity:1;}strong{color:#000;}
+@media(max-width:480px){body{padding:.55rem;}main{padding:.8rem;}.list-row input{transform:scale(1.15);}button.action{padding:.55rem .6rem;font-size:.9rem;}.action-row{gap:.4rem;}progress{height:14px;}}
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Daily Diet Checklist</h1>
+      <button id="toggleUser" aria-label="Switch user">
+        <span id="uJenni" class="active">Jenni</span>/<span id="uAndrew">Andrew</span>
+      </button>
+    </header>
+
+    <main id="checklist"></main>
+
+    <footer>
+      <div id="summary"></div>
+      <progress id="itemProgress" value="0" max="100"></progress>
+      <progress id="calProgress"  value="0" max="1800"></progress>
+
+      <div class="action-row">
+        <button class="action" id="btnCopy">Copy</button>
+        <button class="action" id="btnReset">Reset (all)</button>
+      </div>
+
+      <div id="motivation"></div>
+    </footer>
+
+    <script>
+/* === CONSTANTS ======================================================= */
+const STORE = 'dietChecklist26_';
+const KEY_ACTIVE = STORE+'active';
+const BASE_BUDGET = 1800;
+
+const CAL_LIMITS={
+  jenni:{loss05:1650,loss025:1900,maint:2150},
+  andrew:{loss05:2050,loss025:2300,maint:2550}
+};
+const THEMES={
+  jenni:{primary:'#5b6ee1',accent:'#c5b9ff'},
+  andrew:{primary:'#d97706',accent:'#fbbf24'}
+};
+const ITEMS={
+  jenni:[{id:'lentils',text:'Dried green lentils (190 g dry)',price:0.76,kcal:580},
+    {id:'eggs',text:'Boiled eggs ×3',price:0.57,kcal:233},
+    {id:'banana',text:'Banana (medium)',price:0.20,kcal:105},
+    {id:'apple',text:'Gala apple (medium)',price:0.36,kcal:95},
+    {id:'oat1',text:'Ca‑fortified oat milk 250 mL',price:0.43,kcal:120},
+    {id:'oat2',text:'Ca‑fortified oat milk 250 mL',price:0.43,kcal:120},
+    {id:'chicken',text:'Lean chicken breast 150 g (cooked)',price:1.60,kcal:250},
+    {id:'multi',text:'Multivitamin tablet',price:0.09,kcal:0},
+    {id:'codliver',text:'Cod‑liver oil 5 mL',price:0.31,kcal:41},
+    {id:'pansalt',text:'Pan‑Suola 5 g',price:0.05,kcal:0},
+    {id:'calcium',text:'Calcium supplement tablet',price:0.12,kcal:0}],
+  andrew:[{id:'lentils',text:'Dried green lentils (190 g dry)',price:0.76,kcal:580},
+    {id:'eggs',text:'Boiled eggs ×3',price:0.57,kcal:233},
+    {id:'banana',text:'Banana (medium)',price:0.20,kcal:105},
+    {id:'apple',text:'Gala apple (medium)',price:0.36,kcal:95},
+    {id:'oat',text:'Ca‑fortified oat milk 240 mL',price:0.43,kcal:120},
+    {id:'whey1',text:'Whey protein shake #1 (25 g)',price:0.75,kcal:115},
+    {id:'whey2',text:'Whey protein shake #2 (25 g)',price:0.75,kcal:115},
+    {id:'milk1',text:'Skim milk Ca‑fortified 250 mL #1',price:0.54,kcal:91},
+    {id:'milk2',text:'Skim milk Ca‑fortified 250 mL #2',price:0.54,kcal:91},
+    {id:'multi',text:'Multivitamin tablet',price:0.09,kcal:0},
+    {id:'codliver',text:'Cod‑liver oil 5 mL',price:0.31,kcal:41},
+    {id:'pansalt',text:'Pan‑Suola 5 g',price:0.05,kcal:0}]
+};
+
+/* === DOM SHORTCUTS =================================================== */
+const $=id=>document.getElementById(id);
+const checklistEl=$('checklist');
+
+/* === UTILITIES ======================================================= */
+const round50=n=>Math.round(n/50)*50;
+const stamp=()=>{
+  const d=new Date,p=n=>`${n}`.padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} `+
+    `${d.toLocaleDateString(undefined,{weekday:'long'})} `+
+    `${p(d.getHours())}:${p(d.getMinutes())}`;
+};
+const load=(u)=>JSON.parse(localStorage.getItem(STORE+u)||'[]');
+const save=(u,data)=>localStorage.setItem(STORE+u,JSON.stringify(data));
+const clearAll=()=>Object.keys(ITEMS).forEach(u=>localStorage.removeItem(STORE+u));
+
+/* === STATE =========================================================== */
+let user=localStorage.getItem(KEY_ACTIVE)||'jenni';
+
+/* === RENDERING ======================================================= */
+function applyTheme(){
+  document.documentElement.style.setProperty('--primary',THEMES[user].primary);
+  $('uJenni').classList.toggle('active',user==='jenni');
+  $('uAndrew').classList.toggle('active',user==='andrew');
+}
+function buildRow(item,checked){
+  return `<div class="list-row">
+<label><input type="checkbox" id="${item.id}" ${checked?'checked':''}> ${item.text}</label>
+<span>€${item.price.toFixed(2)}</span>
+</div>`;
+}
+function renderList(){
+  const set=new Set(load(user));
+  checklistEl.innerHTML=ITEMS[user].map(it=>buildRow(it,set.has(it.id))).join('');
+}
+
+/* === LOGIC =========================================================== */
+function updateUI(){
+  const items=ITEMS[user],limits=CAL_LIMITS[user];
+  let price=0,kcal=0,done=0,ids=[];
+  items.forEach(it=>{
+    if($(it.id).checked){price+=it.price;kcal+=it.kcal;done++;ids.push(it.id);}
+  });
+  save(user,ids);
+  const left=Math.max(0,BASE_BUDGET-kcal);
+  $('summary').innerHTML=`✓ <strong>${done}/${items.length}</strong> · Calories <strong>${kcal}</strong>/${BASE_BUDGET} (<strong>${left}</strong> left) · Cost <strong>€${price.toFixed(2)}</strong>`;
+  $('itemProgress').value=done/items.length*100;
+  $('calProgress').value=kcal;
+
+  const msg=$('motivation');
+  if(done===items.length){
+    msg.innerHTML=`Excellent work! For <strong>0.5 kg/wk</strong> loss eat ≈ <strong>${round50(Math.max(0,limits.loss05-kcal))}</strong> kcal more.<br>For <strong>0.25 kg/wk</strong> loss eat ≈ <strong>${round50(Math.max(0,limits.loss025-kcal))}</strong> more.<br>Maintenance upper limit ≈ <strong>${round50(Math.max(0,limits.maint-kcal))}</strong> kcal.`;
+    msg.classList.add('show');
+  }else{msg.classList.remove('show');msg.textContent='';}
+}
+
+/* === EVENT HANDLERS ================================================== */
+$('toggleUser').onclick=()=>{user=user==='jenni'?'andrew':'jenni';localStorage.setItem(KEY_ACTIVE,user);applyTheme();renderList();updateUI();};
+checklistEl.addEventListener('change',e=>{if(e.target.type==='checkbox')updateUI();});
+$('btnReset').onclick =()=>{clearAll();renderList();updateUI();};
+$('btnCopy').onclick  =async()=>{
+  const items=ITEMS[user],limits=CAL_LIMITS[user];
+  let kcal=0,ids=[];items.forEach(it=>{if($(it.id).checked){kcal+=it.kcal;ids.push(it.id);}});
+  const md=[
+    `Diet summary, ${stamp()}`,'',
+    ...items.map(it=>`- [${ids.includes(it.id)?'x':' '}] ${it.text}`),'',
+    `Calories so far: ${kcal} / ${BASE_BUDGET} (targets – 0.5 kg/wk ${limits.loss05}, 0.25 kg/wk ${limits.loss025}, maintenance ${limits.maint})`
+  ].join('\n');
+  try{await navigator.clipboard.writeText(md);const b=$('btnCopy');b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',1500);}catch{alert('Copy failed.');}
+};
+
+/* === INIT ============================================================ */
+applyTheme();renderList();updateUI();
+    </script>
+  </body>
+</html>
+
