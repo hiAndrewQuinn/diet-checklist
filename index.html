@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Diet Checklist (2.6 bug‑fix)</title>
+    <title>Daily Diet Checklist (2.6 bug-fix)</title>
 
     <style>
 :root{--primary:#5b6ee1;--accent:#c5b9ff;--bg:#f4f6f8;--card:#fff;--radius:12px;--shadow:0 2px 6px rgba(0,0,0,.08);}
@@ -26,11 +26,11 @@ button.action{flex:1;background:var(--primary);color:#fff;border:none;border-rad
 #motivation{margin-top:.5rem;font-weight:500;color:var(--primary);opacity:0;transition:opacity .4s;}
 #motivation.show{opacity:1;}strong{color:#000;}
 @media(max-width:480px){body{padding:.55rem;}main{padding:.8rem;}.list-row input{transform:scale(1.15);}button.action{padding:.55rem .6rem;font-size:.9rem;}.action-row{gap:.4rem;}progress{height:14px;}}
-    </style>
+</style>
   </head>
   <body>
     <header>
-      <h1>Daily Diet Checklist</h1>
+      <h1>Daily Diet Checklist</h1>
       <button id="toggleUser" aria-label="Switch user">
         <span id="uJenni" class="active">Jenni</span>/<span id="uAndrew">Andrew</span>
       </button>
@@ -45,7 +45,7 @@ button.action{flex:1;background:var(--primary);color:#fff;border:none;border-rad
 
       <div class="action-row">
         <button class="action" id="btnCopy">Copy</button>
-        <button class="action" id="btnReset">Reset (all)</button>
+        <button class="action" id="btnReset">Reset (all)</button>
       </div>
 
       <div id="motivation"></div>
@@ -66,29 +66,43 @@ const THEMES={
   andrew:{primary:'#d97706',accent:'#fbbf24'}
 };
 const ITEMS={
-  jenni:[{id:'lentils',text:'Dried green lentils (190 g dry)',price:0.76,kcal:580},
-    {id:'eggs',text:'Boiled eggs ×3',price:0.57,kcal:233},
-    {id:'banana',text:'Banana (medium)',price:0.20,kcal:105},
-    {id:'apple',text:'Gala apple (medium)',price:0.36,kcal:95},
-    {id:'oat1',text:'Ca‑fortified oat milk 250 mL',price:0.43,kcal:120},
-    {id:'oat2',text:'Ca‑fortified oat milk 250 mL',price:0.43,kcal:120},
-    {id:'chicken',text:'Lean chicken breast 150 g (cooked)',price:1.60,kcal:250},
-    {id:'multi',text:'Multivitamin tablet',price:0.09,kcal:0},
-    {id:'codliver',text:'Cod‑liver oil 5 mL',price:0.31,kcal:41},
-    {id:'pansalt',text:'Pan‑Suola 5 g',price:0.05,kcal:0},
-    {id:'calcium',text:'Calcium supplement tablet',price:0.12,kcal:0}],
-  andrew:[{id:'lentils',text:'Dried green lentils (190 g dry)',price:0.76,kcal:580},
-    {id:'eggs',text:'Boiled eggs ×3',price:0.57,kcal:233},
-    {id:'banana',text:'Banana (medium)',price:0.20,kcal:105},
-    {id:'apple',text:'Gala apple (medium)',price:0.36,kcal:95},
-    {id:'oat',text:'Ca‑fortified oat milk 240 mL',price:0.43,kcal:120},
-    {id:'whey1',text:'Whey protein shake #1 (25 g)',price:0.75,kcal:115},
-    {id:'whey2',text:'Whey protein shake #2 (25 g)',price:0.75,kcal:115},
-    {id:'milk1',text:'Skim milk Ca‑fortified 250 mL #1',price:0.54,kcal:91},
-    {id:'milk2',text:'Skim milk Ca‑fortified 250 mL #2',price:0.54,kcal:91},
-    {id:'multi',text:'Multivitamin tablet',price:0.09,kcal:0},
-    {id:'codliver',text:'Cod‑liver oil 5 mL',price:0.31,kcal:41},
-    {id:'pansalt',text:'Pan‑Suola 5 g',price:0.05,kcal:0}]
+  jenni:[
+    {id:'lentil1',text:'Dried green lentils (¼ cup dry)',price:0.19,kcal:145},
+    {id:'lentil2',text:'Dried green lentils (¼ cup dry)',price:0.19,kcal:145},
+    {id:'lentil3',text:'Dried green lentils (¼ cup dry)',price:0.19,kcal:145},
+    {id:'lentil4',text:'Dried green lentils (¼ cup dry)',price:0.19,kcal:145},
+    {id:'egg1',   text:'Boiled egg',                price:0.19,kcal:78},
+    {id:'egg2',   text:'Boiled egg',                price:0.19,kcal:78},
+    {id:'egg3',   text:'Boiled egg',                price:0.19,kcal:78},
+    {id:'banana',text:'Banana (medium)',          price:0.20,kcal:105},
+    {id:'apple', text:'Gala apple (medium)',      price:0.36,kcal:95},
+    {id:'oat1',  text:'Ca-fortified oat milk 250 mL',price:0.43,kcal:120},
+    {id:'oat2',  text:'Ca-fortified oat milk 250 mL',price:0.43,kcal:120},
+    {id:'chicken',text:'Lean chicken breast 150 g (cooked)',price:1.60,kcal:250},
+    {id:'multi', text:'Multivitamin tablet',      price:0.09,kcal:0},
+    {id:'codliver',text:'Cod-liver oil 5 mL',       price:0.31,kcal:41},
+    {id:'pansalt',text:'Pan-Suola 5 g',            price:0.05,kcal:0},
+    {id:'calcium',text:'Calcium supplement tablet',price:0.12,kcal:0}
+  ],
+  andrew:[
+    {id:'lentil1',text:'Dried green lentils (¼ cup dry)',price:0.19,kcal:145},
+    {id:'lentil2',text:'Dried green lentils (¼ cup dry)',price:0.19,kcal:145},
+    {id:'lentil3',text:'Dried green lentils (¼ cup dry)',price:0.19,kcal:145},
+    {id:'lentil4',text:'Dried green lentils (¼ cup dry)',price:0.19,kcal:145},
+    {id:'egg1',   text:'Boiled egg',                price:0.19,kcal:78},
+    {id:'egg2',   text:'Boiled egg',                price:0.19,kcal:78},
+    {id:'egg3',   text:'Boiled egg',                price:0.19,kcal:78},
+    {id:'banana',text:'Banana (medium)',          price:0.20,kcal:105},
+    {id:'apple', text:'Gala apple (medium)',      price:0.36,kcal:95},
+    {id:'oat',   text:'Ca-fortified oat milk 240 mL',price:0.43,kcal:120},
+    {id:'whey1', text:'Whey protein shake #1 (25 g)',price:0.75,kcal:115},
+    {id:'whey2', text:'Whey protein shake #2 (25 g)',price:0.75,kcal:115},
+    {id:'milk1', text:'Skim milk Ca-fortified 250 mL #1',price:0.54,kcal:91},
+    {id:'milk2', text:'Skim milk Ca-fortified 250 mL #2',price:0.54,kcal:91},
+    {id:'multi', text:'Multivitamin tablet',      price:0.09,kcal:0},
+    {id:'codliver',text:'Cod-liver oil 5 mL',       price:0.31,kcal:41},
+    {id:'pansalt',text:'Pan-Suola 5 g',            price:0.05,kcal:0}
+  ]
 };
 
 /* === DOM SHORTCUTS =================================================== */
@@ -142,7 +156,7 @@ function updateUI(){
 
   const msg=$('motivation');
   if(done===items.length){
-    msg.innerHTML=`Excellent work! For <strong>0.5 kg/wk</strong> loss eat ≈ <strong>${round50(Math.max(0,limits.loss05-kcal))}</strong> kcal more.<br>For <strong>0.25 kg/wk</strong> loss eat ≈ <strong>${round50(Math.max(0,limits.loss025-kcal))}</strong> more.<br>Maintenance upper limit ≈ <strong>${round50(Math.max(0,limits.maint-kcal))}</strong> kcal.`;
+    msg.innerHTML=`Excellent work! For <strong>0.5 kg/wk</strong> loss eat ≈ <strong>${round50(Math.max(0,limits.loss05-kcal))}</strong> kcal more.<br>For <strong>0.25 kg/wk</strong> loss eat ≈ <strong>${round50(Math.max(0,limits.loss025-kcal))}</strong> more.<br>Maintenance upper limit ≈ <strong>${round50(Math.max(0,limits.maint-kcal))}</strong> kcal.`;
     msg.classList.add('show');
   }else{msg.classList.remove('show');msg.textContent='';}
 }
@@ -157,14 +171,14 @@ $('btnCopy').onclick  =async()=>{
   const md=[
     `Diet summary, ${stamp()}`,'',
     ...items.map(it=>`- [${ids.includes(it.id)?'x':' '}] ${it.text}`),'',
-    `Calories so far: ${kcal} / ${BASE_BUDGET} (targets – 0.5 kg/wk ${limits.loss05}, 0.25 kg/wk ${limits.loss025}, maintenance ${limits.maint})`
+    `Calories so far: ${kcal} / ${BASE_BUDGET} (targets – 0.5 kg/wk ${limits.loss05}, 0.25 kg/wk ${limits.loss025}, maintenance ${limits.maint})`
   ].join('\n');
   try{await navigator.clipboard.writeText(md);const b=$('btnCopy');b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',1500);}catch{alert('Copy failed.');}
 };
 
 /* === INIT ============================================================ */
 applyTheme();renderList();updateUI();
-    </script>
+</script>
   </body>
 </html>
 
